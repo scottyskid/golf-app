@@ -5,7 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
+    "dev": "ts-node --transpile-only src/index.ts",
+    "start:ts": "ts-node src/index.ts",
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -58,4 +59,4 @@
     "node": ">=22.0.0"
   },
   "license": "MIT"
-} 
+}

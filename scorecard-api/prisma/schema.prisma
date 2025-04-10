@@ -11,12 +11,29 @@ datasource db {
 }
 
 model Scorecard {
-  id         String   @id @default(uuid())
+  id         String      @id @default(uuid())
   playerName String
-  courseName String
-  date       DateTime @default(now())
+  courseId   String
+  date       DateTime    @default(now())
   totalScore Int
+  notes      String?
   
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  scores     HoleScore[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model HoleScore {
+  id          String    @id @default(uuid())
+  scorecard   Scorecard @relation(fields: [scorecardId], references: [id], onDelete: Cascade)
+  scorecardId String
+  holeNumber  Int
+  score       Int
+  putts       Int?
+  fairwayHit  Boolean?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([scorecardId, holeNumber])
 } 

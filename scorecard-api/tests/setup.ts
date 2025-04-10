@@ -1,3 +1,15 @@
+// import { PrismaClient } from '@prisma/client';
+
+// Global before all
+beforeAll(async () => {
+  console.log('Test setup complete');
+});
+
+// Global after all
+afterAll(async () => {
+  console.log('Test teardown complete');
+});
+
 // Global setup before all tests
 export default async function globalSetup() {
   console.log('Test environment set up');

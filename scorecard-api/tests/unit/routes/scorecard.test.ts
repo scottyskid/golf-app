@@ -211,7 +211,7 @@ describe('Scorecard API', () => {
       (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(null);
       
       await request(app)
-        .delete(`/api/v1/scorecards/${uuidv4()}`)
+        .delete(`/api/v1/scorecard/${uuidv4()}`)
         .expect('Content-Type', /json/)
         .expect(404);
     });
