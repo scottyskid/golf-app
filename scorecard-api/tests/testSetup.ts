@@ -11,4 +11,16 @@ jest.mock('../src/utils/logger', () => ({
   error: jest.fn(),
   warn: jest.fn(),
   debug: jest.fn(),
-})); 
+}));
+
+// Jest hooks for all tests
+
+// Global before all
+beforeAll(async () => {
+  console.log('Test setup complete');
+});
+
+// Global after all
+afterAll(async () => {
+  console.log('Test teardown complete');
+}); 
