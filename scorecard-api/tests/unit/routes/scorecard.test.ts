@@ -29,7 +29,21 @@ const mockScorecard = {
 const updatedScorecard = {
   ...mockScorecard,
   playerName: 'Updated Player',
-  totalScore: 80
+  totalScore: 80,
+  scores: [
+    {
+      holeNumber: 1,
+      score: 4,
+      putts: 1,
+      fairwayHit: true
+    },
+    {
+      holeNumber: 2,
+      score: 3,
+      putts: 1,
+      fairwayHit: false
+    }
+  ]
 };
 
 // Mock the prisma client
@@ -44,6 +58,7 @@ jest.mock('@prisma/client', () => {
     },
     holeScore: {
       createMany: jest.fn(),
+      deleteMany: jest.fn(),
     },
     $connect: jest.fn(),
     $disconnect: jest.fn(),
@@ -191,8 +206,13 @@ describe('Scorecard API', () => {
 
   describe('PUT /api/v1/scorecard/:id', () => {
     it('should update an existing scorecard', async () => {
-      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.scorecard, 'findUnique')
+        .mockResolvedValueOnce(mockScorecard) // First call to check if exists
+        .mockResolvedValueOnce(updatedScorecard); // Second call to get updated result
+        
       jest.spyOn(prisma.scorecard, 'update').mockResolvedValue(updatedScorecard);
+      jest.spyOn(prisma.holeScore, 'deleteMany').mockResolvedValue({ count: 1 });
+      jest.spyOn(prisma.holeScore, 'createMany').mockResolvedValue({ count: 2 });
       
       const response = await request(app)
         .put(`/api/v1/scorecard/${mockScorecard.id}`)
@@ -200,7 +220,7 @@ describe('Scorecard API', () => {
         .expect(200)
         .expect('Content-Type', /json/);
       
-      assert.deepEqual(response.body, updatedScorecard);
+      assert.deepEqual(response.body, toJsonSerializable(updatedScorecard));
       expect(prisma.scorecard.update).toHaveBeenCalledWith({
         where: { id: mockScorecard.id },
         data: expect.objectContaining({
@@ -209,6 +229,13 @@ describe('Scorecard API', () => {
         }),
         include: { scores: true }
       });
+      
+      // Verify that deleteMany and createMany were called for scores
+      expect(prisma.holeScore.deleteMany).toHaveBeenCalledWith({
+        where: { scorecardId: mockScorecard.id }
+      });
+      
+      expect(prisma.holeScore.createMany).toHaveBeenCalled();
     });
 
     it('should return 404 if scorecard to update not found', async () => {
