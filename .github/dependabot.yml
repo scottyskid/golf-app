@@ -7,6 +7,10 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     versioning-strategy: auto
+    auto-merge: true
+    allow:
+      - dependency-type: "all"
+      - dependency-name: "*"
 
   # Check for updates to npm packages in the scorecard-api package.json
   - package-ecosystem: "npm"
@@ -15,10 +19,18 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     versioning-strategy: auto
+    auto-merge: true
+    allow:
+      - dependency-type: "all"
+      - dependency-name: "*"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10 
+    open-pull-requests-limit: 10
+    auto-merge: true
+    allow:
+      - dependency-type: "all"
+      - dependency-name: "*" 
