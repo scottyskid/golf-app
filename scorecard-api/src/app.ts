@@ -21,7 +21,7 @@ app.get("/health", (_req, res): void => {
 // API routes
 app.use("/api/v1/scorecard", scorecardRoutes);
 
-// Error handler
+// Error handling middleware
 app.use(errorHandler);
 
 // Connect to database on startup

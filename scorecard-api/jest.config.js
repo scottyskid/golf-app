@@ -14,5 +14,5 @@ module.exports = {
     setupFilesAfterEnv: ["<rootDir>/tests/testSetup.ts"],
     testPathIgnorePatterns: ["/node_modules/", "/build/"],
     verbose: true,
-    transformIgnorePatterns: ["/node_modules/(?!chai|superagent)"],
+    transformIgnorePatterns: ["node_modules/(?!(chai|superagent)/)"],
 };

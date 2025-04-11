@@ -1,6 +1,5 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import { PrismaClient } from "@prisma/client";
-import { assert } from "chai";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 
@@ -102,9 +101,9 @@ describe("Scorecard API", () => {
 
             const response = await request(app).get("/api/v1/scorecard").expect(200).expect("Content-Type", /json/);
 
-            assert.isArray(response.body);
-            assert.equal(response.body.length, 1);
-            assert.equal(response.body[0].playerName, mockScorecard.playerName);
+            expect(Array.isArray(response.body)).toBe(true);
+            expect(response.body.length).toBe(1);
+            expect(response.body[0].playerName).toBe(mockScorecard.playerName);
         });
 
         it("should filter scorecards by playerName", async () => {
@@ -115,7 +114,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            assert.isArray(response.body);
+            expect(Array.isArray(response.body)).toBe(true);
             expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
@@ -133,7 +132,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            assert.isArray(response.body);
+            expect(Array.isArray(response.body)).toBe(true);
             expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
@@ -153,7 +152,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            assert.deepEqual(response.body, toJsonSerializable(mockScorecard));
+            expect(response.body).toEqual(toJsonSerializable(mockScorecard));
             expect(prisma.scorecard.findUnique).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 include: { scores: true },
@@ -193,8 +192,7 @@ describe("Scorecard API", () => {
             expect(prisma.holeScore.createMany).toHaveBeenCalled();
 
             // Verify that the response contains a success indicator
-            // This depends on what your API actually returns
-            assert.isDefined(response.body);
+            expect(response.body).toBeDefined();
         });
 
         it("should return 400 if required fields are missing", async () => {
@@ -228,7 +226,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            assert.deepEqual(response.body, toJsonSerializable(updatedScorecard));
+            expect(response.body).toEqual(toJsonSerializable(updatedScorecard));
             expect(prisma.scorecard.update).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 data: expect.objectContaining({
