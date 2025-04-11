@@ -13,5 +13,8 @@ module.exports = {
   globalTeardown: '<rootDir>/tests/teardown.ts',
   setupFilesAfterEnv: ['<rootDir>/tests/testSetup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/build/'],
-  verbose: true
+  verbose: true,
+  transformIgnorePatterns: [
+    '/node_modules/(?!chai|superagent)'
+  ]
 }; 

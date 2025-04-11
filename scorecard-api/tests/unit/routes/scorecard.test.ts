@@ -3,15 +3,19 @@ import { app } from '../../../src/app';
 import { assert } from 'chai';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+import { Scorecard } from '../../../src/types/scorecard';
 
-// Mock data
+// Mock data with all required fields
 const mockScorecard = {
   id: uuidv4(),
   playerName: 'Test Player',
   courseId: uuidv4(),
-  date: new Date().toISOString(),
+  date: new Date(),
   totalScore: 85,
   notes: 'Test round',
+  createdAt: new Date(),
+  updatedAt: new Date(),
   scores: [
     {
       holeNumber: 1,
@@ -49,6 +53,15 @@ jest.mock('@prisma/client', () => {
 
 const prisma = new PrismaClient();
 
+function toJsonSerializable(scorecard: Scorecard) {
+  return {
+    ...scorecard,
+    date: scorecard.date instanceof Date ? scorecard.date.toISOString() : scorecard.date,
+    createdAt: scorecard.createdAt instanceof Date ? scorecard.createdAt.toISOString() : scorecard.createdAt,
+    updatedAt: scorecard.updatedAt instanceof Date ? scorecard.updatedAt.toISOString() : scorecard.updatedAt
+  };
+}
+
 describe('Scorecard API', () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -56,7 +69,7 @@ describe('Scorecard API', () => {
 
   describe('GET /api/v1/scorecard', () => {
     it('should return all scorecards', async () => {
-      (prisma.scorecard.findMany as jest.Mock).mockResolvedValue([mockScorecard]);
+      jest.spyOn(prisma.scorecard, 'findMany').mockResolvedValue([mockScorecard]);
       
       const response = await request(app)
         .get('/api/v1/scorecard')
@@ -69,13 +82,14 @@ describe('Scorecard API', () => {
     });
 
     it('should filter scorecards by playerName', async () => {
-      (prisma.scorecard.findMany as jest.Mock).mockResolvedValue([mockScorecard]);
+      jest.spyOn(prisma.scorecard, 'findMany').mockResolvedValue([mockScorecard]);
       
       const response = await request(app)
         .get('/api/v1/scorecard?playerName=Test Player')
         .expect('Content-Type', /json/)
         .expect(200);
       
+      assert.isArray(response.body);
       expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
@@ -86,13 +100,14 @@ describe('Scorecard API', () => {
     });
 
     it('should filter scorecards by courseId', async () => {
-      (prisma.scorecard.findMany as jest.Mock).mockResolvedValue([mockScorecard]);
+      jest.spyOn(prisma.scorecard, 'findMany').mockResolvedValue([mockScorecard]);
       
       const response = await request(app)
         .get(`/api/v1/scorecard?courseId=${mockScorecard.courseId}`)
         .expect('Content-Type', /json/)
         .expect(200);
       
+      assert.isArray(response.body);
       expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
@@ -105,14 +120,14 @@ describe('Scorecard API', () => {
 
   describe('GET /api/v1/scorecard/:id', () => {
     it('should return a specific scorecard by ID', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(mockScorecard);
       
       const response = await request(app)
         .get(`/api/v1/scorecard/${mockScorecard.id}`)
         .expect('Content-Type', /json/)
         .expect(200);
       
-      assert.deepEqual(response.body, mockScorecard);
+      assert.deepEqual(response.body, toJsonSerializable(mockScorecard));
       expect(prisma.scorecard.findUnique).toHaveBeenCalledWith({
         where: { id: mockScorecard.id },
         include: { scores: true }
@@ -120,7 +135,7 @@ describe('Scorecard API', () => {
     });
 
     it('should return 404 if scorecard not found', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(null);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(null);
       
       await request(app)
         .get(`/api/v1/scorecard/${uuidv4()}`)
@@ -131,8 +146,8 @@ describe('Scorecard API', () => {
 
   describe('POST /api/v1/scorecard', () => {
     it('should create a new scorecard', async () => {
-      (prisma.scorecard.create as jest.Mock).mockResolvedValue(mockScorecard);
-      (prisma.holeScore.createMany as jest.Mock).mockResolvedValue({ count: 1 });
+      jest.spyOn(prisma.scorecard, 'create').mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.holeScore, 'createMany').mockResolvedValue({ count: 1 });
       
       const response = await request(app)
         .post('/api/v1/scorecard')
@@ -162,8 +177,8 @@ describe('Scorecard API', () => {
 
   describe('PUT /api/v1/scorecards/:id', () => {
     it('should update an existing scorecard', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(mockScorecard);
-      (prisma.scorecard.update as jest.Mock).mockResolvedValue(updatedScorecard);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.scorecard, 'update').mockResolvedValue(updatedScorecard);
       
       const response = await request(app)
         .put(`/api/v1/scorecards/${mockScorecard.id}`)
@@ -183,7 +198,7 @@ describe('Scorecard API', () => {
     });
 
     it('should return 404 if scorecard to update not found', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(null);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(null);
       
       await request(app)
         .put(`/api/v1/scorecards/${uuidv4()}`)
@@ -195,8 +210,8 @@ describe('Scorecard API', () => {
 
   describe('DELETE /api/v1/scorecards/:id', () => {
     it('should delete a scorecard', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(mockScorecard);
-      (prisma.scorecard.delete as jest.Mock).mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(mockScorecard);
+      jest.spyOn(prisma.scorecard, 'delete').mockResolvedValue(mockScorecard);
       
       await request(app)
         .delete(`/api/v1/scorecards/${mockScorecard.id}`)
@@ -208,7 +223,7 @@ describe('Scorecard API', () => {
     });
 
     it('should return 404 if scorecard to delete not found', async () => {
-      (prisma.scorecard.findUnique as jest.Mock).mockResolvedValue(null);
+      jest.spyOn(prisma.scorecard, 'findUnique').mockResolvedValue(null);
       
       await request(app)
         .delete(`/api/v1/scorecard/${uuidv4()}`)

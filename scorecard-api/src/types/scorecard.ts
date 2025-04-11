@@ -11,10 +11,12 @@ export interface Scorecard {
   id?: string;
   playerName: string;
   courseId: string;
-  date?: string;
+  date?: Date;
   totalScore: number;
   notes?: string;
   scores?: HoleScore[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ScorecardFilter {

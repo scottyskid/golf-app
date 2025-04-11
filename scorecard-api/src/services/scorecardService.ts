@@ -1,5 +1,5 @@
 import prisma from '../db';
-import { Scorecard, ScorecardFilter, HoleScore } from '../types/scorecard';
+import { Scorecard, ScorecardFilter } from '../types/scorecard';
 import { ApiError } from '../middlewares/errorHandler';
 
 export const scorecardService = {
