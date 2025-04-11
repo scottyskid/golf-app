@@ -1,0 +1,16 @@
+
+# Files to ignore
+**/*.json
+**/*.yaml
+**/*.yml
+**/*.md
+.prettierrc
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Node artifact files
+node_modules/
+dist/
+coverage/
