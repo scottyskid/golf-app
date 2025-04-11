@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "93752d4b-591b-47fd-9fbf-63bcd7595361",
+		"name": "Scorecard API Collection",
+		"description": "A collection for testing the Scorecard API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14973402"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Check if the API is running properly"
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Scorecards",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/scorecard",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"scorecard"
+					],
+					"query": [
+						{
+							"key": "playerName",
+							"value": "",
+							"description": "Filter by player name",
+							"disabled": true
+						},
+						{
+							"key": "courseId",
+							"value": "",
+							"description": "Filter by course ID",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all scorecards with optional filtering by playerName and courseId"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Scorecard by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/scorecard/{{scorecardId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"scorecard",
+						"{{scorecardId}}"
+					]
+				},
+				"description": "Get a specific scorecard by its ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Scorecard",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"playerName\": \"John Doe\",\n  \"courseId\": \"course-123\",\n  \"date\": \"{{$isoTimestamp}}\",\n  \"totalScore\": 72,\n  \"notes\": \"Great round!\",\n  \"scores\": [\n    {\n      \"holeNumber\": 1,\n      \"score\": 4,\n      \"putts\": 2,\n      \"fairwayHit\": true\n    },\n    {\n      \"holeNumber\": 2,\n      \"score\": 3,\n      \"putts\": 1,\n      \"fairwayHit\": true\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/scorecard",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"scorecard"
+					]
+				},
+				"description": "Create a new scorecard with player information and hole scores"
+			},
+			"response": []
+		},
+		{
+			"name": "Update Scorecard",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"playerName\": \"John Doe\",\n  \"totalScore\": 70,\n  \"notes\": \"Updated round notes\",\n  \"scores\": [\n    {\n      \"holeNumber\": 1,\n      \"score\": 4,\n      \"putts\": 2,\n      \"fairwayHit\": true\n    },\n    {\n      \"holeNumber\": 2,\n      \"score\": 3,\n      \"putts\": 1,\n      \"fairwayHit\": true\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/scorecard/{{scorecardId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"scorecard",
+						"{{scorecardId}}"
+					]
+				},
+				"description": "Update an existing scorecard"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Scorecard",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/scorecard/{{scorecardId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"scorecard",
+						"{{scorecardId}}"
+					]
+				},
+				"description": "Delete a scorecard by its ID"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "scorecardId",
+			"value": "df9db4a7-598a-41dc-a3b0-4f8dbbf08d16",
+			"type": "string"
+		}
+	]
+}
