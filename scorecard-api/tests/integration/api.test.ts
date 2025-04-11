@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../src/app';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 const prisma = new PrismaClient();
 
@@ -129,7 +130,7 @@ describe('Scorecard API Integration Tests', () => {
       expect(response.body.scores.length).toBe(2);
     });
 
-    it('should update a scorecard (PUT /api/v1/scorecards/:id)', async () => {
+    it('should update a scorecard (PUT /api/v1/scorecard/:id)', async () => {
       const updatedData = {
         playerName: 'Updated Integration Test Player',
         totalScore: 70,
@@ -137,7 +138,7 @@ describe('Scorecard API Integration Tests', () => {
       };
       
       const response = await request(app)
-        .put(`/api/v1/scorecards/${testScorecardId}`)
+        .put(`/api/v1/scorecard/${testScorecardId}`)
         .send(updatedData)
         .expect('Content-Type', /json/)
         .expect(200);
