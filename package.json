@@ -1,5 +1,5 @@
 {
-  "name": "kubernetes-poc",
+  "name": "golf-app",
   "private": true,
   "workspaces": [
     "scorecard-api"
