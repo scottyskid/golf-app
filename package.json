@@ -1,20 +1,19 @@
 {
-  "name": "@eftsure/cdk-common-root",
+  "name": "kubernetes-poc",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "scorecard-api"
   ],
   "engines": {
     "node": "^22.13.0",
     "npm": "^10.9.2"
   },
   "scripts": {
-    "clean": "rm -rf packages/*/dist",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
     "prepare": "husky",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix"
   },
