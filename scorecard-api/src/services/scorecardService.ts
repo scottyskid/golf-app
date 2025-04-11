@@ -1,5 +1,3 @@
-import { Prisma } from "@prisma/client";
-
 import prisma from "../db";
 import { ApiError } from "../middlewares/errorHandler";
 import { Scorecard, ScorecardFilter } from "../types/scorecard";
@@ -9,7 +7,8 @@ export const scorecardService = {
      * Get all scorecards with optional filtering
      */
     getAllScorecards: async (filter: ScorecardFilter = {}) => {
-        const where: Prisma.ScorecardWhereInput = {};
+        // FIXME
+        const where: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         if (filter.playerName) {
             where.playerName = filter.playerName;
