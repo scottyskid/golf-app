@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from "uuid";
 import { PrismaModule } from "../../../src/prisma/prisma.module";
 import { PrismaService } from "../../../src/prisma/prisma.service";
 import { ScorecardModule } from "../../../src/scorecard/scorecard.module";
-import { Scorecard } from "../../../src/types/scorecard";
 
 // Mock data for sending in requests (matches the DTO)
 const scorecardPayload = {
@@ -33,9 +32,9 @@ const scorecardPayload = {
 const mockScorecard = {
     id: uuidv4(),
     ...scorecardPayload,
-    date: new Date(scorecardPayload.date),
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    date: new Date(scorecardPayload.date).toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 };
 
 // For updates, separate payload from expected result
@@ -62,28 +61,6 @@ const updatedScorecard = {
     ...mockScorecard,
     ...updatePayload,
 };
-
-// FIXME: This feels really flakey, how do we fix this
-interface SerializableScorecardWithStringDates extends Omit<Scorecard, "date" | "createdAt" | "updatedAt"> {
-    date?: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-function toJsonSerializable(scorecard: Scorecard): SerializableScorecardWithStringDates {
-    return {
-        ...scorecard,
-        date: scorecard.date instanceof Date ? scorecard.date.toISOString() : (scorecard.date as string | undefined),
-        createdAt:
-            scorecard.createdAt instanceof Date
-                ? scorecard.createdAt.toISOString()
-                : (scorecard.createdAt as string | undefined),
-        updatedAt:
-            scorecard.updatedAt instanceof Date
-                ? scorecard.updatedAt.toISOString()
-                : (scorecard.updatedAt as string | undefined),
-    };
-}
 
 describe("Scorecard API", () => {
     let app: INestApplication;
@@ -169,7 +146,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            expect(response.body).toEqual(toJsonSerializable(mockScorecard));
+            expect(response.body).toEqual(mockScorecard);
             expect(mockPrismaService.scorecard.findUnique).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 include: { scores: true },
@@ -247,7 +224,7 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            expect(response.body).toEqual(toJsonSerializable(updatedScorecard));
+            expect(response.body).toEqual(updatedScorecard);
             expect(mockPrismaService.scorecard.update).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 data: expect.objectContaining({
