@@ -1,10 +1,6 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
-// Set OpenTelemetry environment variables before importing app module
-process.env.OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || "http://otel-collector:4318";
-process.env.OTEL_SERVICE_NAME = "scorecard-api";
-
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { SwaggerDocModule } from "./common/swagger/swagger.module";

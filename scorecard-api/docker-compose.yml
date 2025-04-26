@@ -12,7 +12,7 @@ services:
     command: [ "--config=/etc/otelcol-config.yml" ]
     environment:
       EFTSURE_COLLECTOR_MEMORY_LIMIT_MIB: 512
-      EFTSURE_ASPIRE_OTEL_ENDPONT: "http://aspire-dashboard:18889"
+      EFTSURE_ASPIRE_OTEL_ENDPOINT: "http://aspire-dashboard:18889"
     depends_on:
       aspire-dashboard:
         condition: service_started
@@ -53,15 +53,16 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/scorecard
       NODE_ENV: development
       # OpenTelemetry configuration
-      OTEL_COLLECTOR_URL: "http://otel-collector:4318"
-      OTEL_SERVICE_NAME: "scorecard-api"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=scorecard-api,service.version=0.1.0,deployment.environment=development"
-      OTEL_TRACES_EXPORTER: "otlp"
-      OTEL_METRICS_EXPORTER: "otlp"
-      OTEL_LOGS_EXPORTER: "otlp"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment.name=dev"
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy

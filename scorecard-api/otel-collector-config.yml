@@ -24,24 +24,10 @@ receivers:
       processes:
       # System processes metrics, disabled by default
       # process:
-  jaeger:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:14250
-      thrift_binary:
-        endpoint: 0.0.0.0:6832
-      thrift_compact:
-        endpoint: 0.0.0.0:6831
-      thrift_http:
-        endpoint: 0.0.0.0:14268
   otlp:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
-  zipkin:
-    endpoint: 0.0.0.0:9411
 
 processors:
   batch:
@@ -65,16 +51,15 @@ exporters:
     # can be values of (detailed | normal | basic)
     verbosity: basic
   otlp/aspire:
-    endpoint: "${EFTSURE_ASPIRE_OTEL_ENDPONT}" 
+    endpoint: "${EFTSURE_ASPIRE_OTEL_ENDPOINT}" 
     tls:
       insecure: true
 
 service:
   extensions: [health_check, zpages]
   pipelines:
-    # Required for Splunk APM
     traces:
-      receivers: [jaeger, otlp, zipkin]
+      receivers: [otlp]
       processors:
       - memory_limiter
       - batch

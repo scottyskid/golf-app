@@ -8,6 +8,4 @@
  *
  * We define the following attributes for our own use.
  */
-export const ATTR_DEPLOYMENT_ENVIRONMENT = "deployment.environment";
-export const ATTR_DB_NAMESPACE = "db.namespace";
-export const ATTR_DB_OPERATION_NAME = "db.operation.name";
+export const ATTR_DEPLOYMENT_ENVIRONMENT = "deployment.environment.name";
