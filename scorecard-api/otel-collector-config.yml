@@ -1,0 +1,96 @@
+# Minimum configuration file for the OpenTelemetry Collector Contrib distribution
+# https://github.com/open-telemetry/opentelemetry-collector-contrib
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+receivers:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      memory:
+      network:
+      # System load average metrics https://en.wikipedia.org/wiki/Load_(computing)
+      load:
+      # Paging/Swap space utilization and I/O metrics
+      paging:
+      # Aggregated system process count metrics
+      processes:
+      # System processes metrics, disabled by default
+      # process:
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_binary:
+        endpoint: 0.0.0.0:6832
+      thrift_compact:
+        endpoint: 0.0.0.0:6831
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  zipkin:
+    endpoint: 0.0.0.0:9411
+
+processors:
+  batch:
+  # Enabling the memory_limiter is strongly recommended for every pipeline.
+  # Configuration is based on the amount of memory allocated to the collector.
+  # In general, the limit should be 90% of the collector's memory. 
+  # For more information about memory limiter, see
+  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiter/README.md
+  memory_limiter:
+    check_interval: 2s
+    limit_mib: ${EFTSURE_COLLECTOR_MEMORY_LIMIT_MIB}
+
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor#ordering
+  # detects resource attributes on the system
+  resourcedetection:
+    detectors: [docker, system]
+    override: true
+
+exporters:
+  debug:
+    # can be values of (detailed | normal | basic)
+    verbosity: basic
+  otlp/aspire:
+    endpoint: "${EFTSURE_ASPIRE_OTEL_ENDPONT}" 
+    tls:
+      insecure: true
+
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    # Required for Splunk APM
+    traces:
+      receivers: [jaeger, otlp, zipkin]
+      processors:
+      - memory_limiter
+      - batch
+      - resourcedetection
+      exporters: [otlp/aspire, debug]
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: 
+      - memory_limiter
+      - batch
+      - resourcedetection
+      exporters: [otlp/aspire, debug] 
+    logs:
+      receivers: [otlp]
+      processors:
+      - memory_limiter
+      - batch
+      - resourcedetection
+      exporters: [otlp/aspire, debug]

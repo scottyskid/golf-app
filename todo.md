@@ -1,14 +1,16 @@
-
 - setup integration and e2e tests
 - check against archetectural patterns like clean archetecture
-- understand more about dependancy injection
+- understand more about dependancy injection and look to include it in the api potentially
 - confirm test coverage
 - Error handling and validation
     - Use class-validator and class-transformer (already dependencies) effectively within your DTOs (Data Transfer Objects) in NestJS to validate incoming request bodies and query parameters.
     - Implement consistent error handling. NestJS filters can help centralize error logging and formatting responses (as hinted in app-spec.md).
 - add proper logging module with an otel sink
-    - add in the aspire dashboard to the docker compose
+    - get otel feeding metrics and traces fully into the aspire dashboard
+    - consolidate where otel params are being set, because currently they are done in `otel.config.ts`, `otel.module.ts`, `main.ts` and `docker-compose.yml`
+    - move otel to gRPC from HTTP
 - clean up endpoints (where should health be? where should version be?)
     - see if nestjs has built in health checks
-- add a central service for database connection
+- add a central service for database connection/auth
     - can we do this for both testing and production?
+- is it possible to get hot reloading in the container?

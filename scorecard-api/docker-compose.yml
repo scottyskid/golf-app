@@ -1,4 +1,31 @@
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol-config.yml
+    ports:
+      - 1888:1888 # pprof extension
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    command: [ "--config=/etc/otelcol-config.yml" ]
+    environment:
+      EFTSURE_COLLECTOR_MEMORY_LIMIT_MIB: 512
+      EFTSURE_ASPIRE_OTEL_ENDPONT: "http://aspire-dashboard:18889"
+    depends_on:
+      aspire-dashboard:
+        condition: service_started
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.1
+    ports:
+      - 18888:18888 # Dashboard endpoint
+      - 18889:18889 # OTEL endpoint
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    tty: true
+
   postgres:
     image: postgres:16
     container_name: scorecard-postgres
@@ -25,12 +52,22 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/scorecard
       NODE_ENV: development
+      # OpenTelemetry configuration
+      OTEL_COLLECTOR_URL: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: "scorecard-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=scorecard-api,service.version=0.1.0,deployment.environment=development"
+      OTEL_TRACES_EXPORTER: "otlp"
+      OTEL_METRICS_EXPORTER: "otlp"
+      OTEL_LOGS_EXPORTER: "otlp"
     ports:
       - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     restart: unless-stopped
-
+  
 volumes:
   postgres-data: 

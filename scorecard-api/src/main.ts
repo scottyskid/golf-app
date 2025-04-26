@@ -1,6 +1,10 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
+// Set OpenTelemetry environment variables before importing app module
+process.env.OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || "http://otel-collector:4318";
+process.env.OTEL_SERVICE_NAME = "scorecard-api";
+
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { SwaggerDocModule } from "./common/swagger/swagger.module";
@@ -28,6 +32,17 @@ async function bootstrap(): Promise<void> {
     await app.listen(port);
     console.log(`Server running on port ${port}`);
     console.log(`OpenAPI documentation available at http://localhost:${port}/docs`);
+
+    // Handle graceful shutdown
+    const signals = ["SIGTERM", "SIGINT"];
+    for (const signal of signals) {
+        process.on(signal, async () => {
+            console.log(`Received ${signal}, shutting down gracefully...`);
+            await app.close();
+            console.log("HTTP server closed");
+            process.exit(0);
+        });
+    }
 }
 
 bootstrap();
