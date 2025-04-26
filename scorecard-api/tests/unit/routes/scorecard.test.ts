@@ -1,21 +1,24 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
-import { PrismaClient } from "@prisma/client";
+import { INestApplication } from "@nestjs/common";
+import { Test, TestingModule } from "@nestjs/testing";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 
-import { app } from "../../../src/app";
+// Disable the no-explicit-any rule for this test file
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { PrismaModule } from "../../../src/prisma/prisma.module";
+import { PrismaService } from "../../../src/prisma/prisma.service";
+import { ScorecardModule } from "../../../src/scorecard/scorecard.module";
 import { Scorecard } from "../../../src/types/scorecard";
 
-// Mock data with all required fields
-const mockScorecard = {
-    id: uuidv4(),
+// Mock data for sending in requests (matches the DTO)
+const scorecardPayload = {
     playerName: "Test Player",
     courseId: uuidv4(),
-    date: new Date(),
+    date: new Date().toISOString(), // Convert to ISO string for proper serialization
     totalScore: 85,
     notes: "Test round",
-    createdAt: new Date(),
-    updatedAt: new Date(),
     scores: [
         {
             holeNumber: 1,
@@ -26,8 +29,17 @@ const mockScorecard = {
     ],
 };
 
-const updatedScorecard = {
-    ...mockScorecard,
+// Complete mock data for validation (includes server-side fields)
+const mockScorecard = {
+    id: uuidv4(),
+    ...scorecardPayload,
+    date: new Date(scorecardPayload.date),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+};
+
+// For updates, separate payload from expected result
+const updatePayload = {
     playerName: "Updated Player",
     totalScore: 80,
     scores: [
@@ -46,27 +58,10 @@ const updatedScorecard = {
     ],
 };
 
-// Mock the prisma client
-jest.mock("@prisma/client", () => {
-    const mockPrismaClient = {
-        scorecard: {
-            findMany: jest.fn(),
-            findUnique: jest.fn(),
-            create: jest.fn(),
-            update: jest.fn(),
-            delete: jest.fn(),
-        },
-        holeScore: {
-            createMany: jest.fn(),
-            deleteMany: jest.fn(),
-        },
-        $connect: jest.fn(),
-        $disconnect: jest.fn(),
-    };
-    return { PrismaClient: jest.fn(() => mockPrismaClient) };
-});
-
-const prisma = new PrismaClient();
+const updatedScorecard = {
+    ...mockScorecard,
+    ...updatePayload,
+};
 
 // FIXME: This feels really flakey, how do we fix this
 interface SerializableScorecardWithStringDates extends Omit<Scorecard, "date" | "createdAt" | "updatedAt"> {
@@ -91,15 +86,37 @@ function toJsonSerializable(scorecard: Scorecard): SerializableScorecardWithStri
 }
 
 describe("Scorecard API", () => {
-    beforeEach(() => {
+    let app: INestApplication;
+
+    beforeEach(async () => {
         jest.resetAllMocks();
+
+        const moduleFixture: TestingModule = await Test.createTestingModule({
+            imports: [ScorecardModule, PrismaModule],
+        })
+            .overrideProvider(PrismaService)
+            .useValue(mockPrismaService)
+            .compile();
+
+        app = moduleFixture.createNestApplication();
+        app.setGlobalPrefix("api/v1");
+        await app.init();
+    });
+
+    afterEach(async () => {
+        if (app) {
+            await app.close();
+        }
     });
 
     describe("GET /api/v1/scorecard", () => {
         it("should return all scorecards", async () => {
-            jest.spyOn(prisma.scorecard, "findMany").mockResolvedValue([mockScorecard]);
+            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
-            const response = await request(app).get("/api/v1/scorecard").expect(200).expect("Content-Type", /json/);
+            const response = await request(app.getHttpServer())
+                .get("/api/v1/scorecard")
+                .expect(200)
+                .expect("Content-Type", /json/);
 
             expect(Array.isArray(response.body)).toBe(true);
             expect(response.body.length).toBe(1);
@@ -107,15 +124,15 @@ describe("Scorecard API", () => {
         });
 
         it("should filter scorecards by playerName", async () => {
-            jest.spyOn(prisma.scorecard, "findMany").mockResolvedValue([mockScorecard]);
+            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
-            const response = await request(app)
+            const response = await request(app.getHttpServer())
                 .get("/api/v1/scorecard?playerName=Test Player")
                 .expect(200)
                 .expect("Content-Type", /json/);
 
             expect(Array.isArray(response.body)).toBe(true);
-            expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
+            expect(mockPrismaService.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
                         playerName: "Test Player",
@@ -125,15 +142,15 @@ describe("Scorecard API", () => {
         });
 
         it("should filter scorecards by courseId", async () => {
-            jest.spyOn(prisma.scorecard, "findMany").mockResolvedValue([mockScorecard]);
+            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
-            const response = await request(app)
+            const response = await request(app.getHttpServer())
                 .get(`/api/v1/scorecard?courseId=${mockScorecard.courseId}`)
                 .expect(200)
                 .expect("Content-Type", /json/);
 
             expect(Array.isArray(response.body)).toBe(true);
-            expect(prisma.scorecard.findMany).toHaveBeenCalledWith(
+            expect(mockPrismaService.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
                         courseId: mockScorecard.courseId,
@@ -145,51 +162,55 @@ describe("Scorecard API", () => {
 
     describe("GET /api/v1/scorecard/:id", () => {
         it("should return a specific scorecard by ID", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique").mockResolvedValue(mockScorecard);
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
 
-            const response = await request(app)
+            const response = await request(app.getHttpServer())
                 .get(`/api/v1/scorecard/${mockScorecard.id}`)
                 .expect(200)
                 .expect("Content-Type", /json/);
 
             expect(response.body).toEqual(toJsonSerializable(mockScorecard));
-            expect(prisma.scorecard.findUnique).toHaveBeenCalledWith({
+            expect(mockPrismaService.scorecard.findUnique).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 include: { scores: true },
             });
         });
 
         it("should return 404 if scorecard not found", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique").mockResolvedValue(null);
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
 
-            await request(app).get(`/api/v1/scorecard/${uuidv4()}`).expect(404).expect("Content-Type", /json/);
+            await request(app.getHttpServer())
+                .get(`/api/v1/scorecard/${uuidv4()}`)
+                .expect(404)
+                .expect("Content-Type", /json/);
         });
     });
 
     describe("POST /api/v1/scorecard", () => {
         it("should create a new scorecard", async () => {
-            jest.spyOn(prisma.scorecard, "create").mockResolvedValue(mockScorecard);
-            jest.spyOn(prisma.holeScore, "createMany").mockResolvedValue({ count: 1 });
+            mockPrismaService.scorecard.create.mockResolvedValue(mockScorecard);
+            mockPrismaService.holeScore.createMany.mockResolvedValue({ count: 1 });
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
 
-            const response = await request(app)
+            const response = await request(app.getHttpServer())
                 .post("/api/v1/scorecard")
-                .send(mockScorecard)
+                .send(scorecardPayload) // Send only the payload without ID/timestamps
                 .expect(201)
                 .expect("Content-Type", /json/);
 
             // Verify that the create method was called with the correct data
-            expect(prisma.scorecard.create).toHaveBeenCalledWith(
+            expect(mockPrismaService.scorecard.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
-                        playerName: mockScorecard.playerName,
-                        courseId: mockScorecard.courseId,
-                        totalScore: mockScorecard.totalScore,
+                        playerName: scorecardPayload.playerName,
+                        courseId: scorecardPayload.courseId,
+                        totalScore: scorecardPayload.totalScore,
                     }),
                 }),
             );
 
             // Verify hole scores were created
-            expect(prisma.holeScore.createMany).toHaveBeenCalled();
+            expect(mockPrismaService.holeScore.createMany).toHaveBeenCalled();
 
             // Verify that the response contains a success indicator
             expect(response.body).toBeDefined();
@@ -202,7 +223,7 @@ describe("Scorecard API", () => {
                 totalScore: 85,
             };
 
-            await request(app)
+            await request(app.getHttpServer())
                 .post("/api/v1/scorecard")
                 .send(invalidScorecard)
                 .expect(400)
@@ -212,44 +233,44 @@ describe("Scorecard API", () => {
 
     describe("PUT /api/v1/scorecard/:id", () => {
         it("should update an existing scorecard", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique")
+            mockPrismaService.scorecard.findUnique
                 .mockResolvedValueOnce(mockScorecard) // First call to check if exists
                 .mockResolvedValueOnce(updatedScorecard); // Second call to get updated result
 
-            jest.spyOn(prisma.scorecard, "update").mockResolvedValue(updatedScorecard);
-            jest.spyOn(prisma.holeScore, "deleteMany").mockResolvedValue({ count: 1 });
-            jest.spyOn(prisma.holeScore, "createMany").mockResolvedValue({ count: 2 });
+            mockPrismaService.scorecard.update.mockResolvedValue(updatedScorecard);
+            mockPrismaService.holeScore.deleteMany.mockResolvedValue({ count: 1 });
+            mockPrismaService.holeScore.createMany.mockResolvedValue({ count: 2 });
 
-            const response = await request(app)
+            const response = await request(app.getHttpServer())
                 .put(`/api/v1/scorecard/${mockScorecard.id}`)
-                .send(updatedScorecard)
+                .send(updatePayload)
                 .expect(200)
                 .expect("Content-Type", /json/);
 
             expect(response.body).toEqual(toJsonSerializable(updatedScorecard));
-            expect(prisma.scorecard.update).toHaveBeenCalledWith({
+            expect(mockPrismaService.scorecard.update).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 data: expect.objectContaining({
-                    playerName: updatedScorecard.playerName,
-                    totalScore: updatedScorecard.totalScore,
+                    playerName: updatePayload.playerName,
+                    totalScore: updatePayload.totalScore,
                 }),
                 include: { scores: true },
             });
 
             // Verify that deleteMany and createMany were called for scores
-            expect(prisma.holeScore.deleteMany).toHaveBeenCalledWith({
+            expect(mockPrismaService.holeScore.deleteMany).toHaveBeenCalledWith({
                 where: { scorecardId: mockScorecard.id },
             });
 
-            expect(prisma.holeScore.createMany).toHaveBeenCalled();
+            expect(mockPrismaService.holeScore.createMany).toHaveBeenCalled();
         });
 
         it("should return 404 if scorecard to update not found", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique").mockResolvedValue(null);
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
 
-            await request(app)
+            await request(app.getHttpServer())
                 .put(`/api/v1/scorecard/${uuidv4()}`)
-                .send(updatedScorecard)
+                .send(updatePayload)
                 .expect(404)
                 .expect("Content-Type", /json/);
         });
@@ -257,20 +278,40 @@ describe("Scorecard API", () => {
 
     describe("DELETE /api/v1/scorecard/:id", () => {
         it("should delete a scorecard", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique").mockResolvedValue(mockScorecard);
-            jest.spyOn(prisma.scorecard, "delete").mockResolvedValue(mockScorecard);
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
+            mockPrismaService.scorecard.delete.mockResolvedValue(mockScorecard);
 
-            await request(app).delete(`/api/v1/scorecard/${mockScorecard.id}`).expect(204);
+            await request(app.getHttpServer()).delete(`/api/v1/scorecard/${mockScorecard.id}`).expect(204);
 
-            expect(prisma.scorecard.delete).toHaveBeenCalledWith({
+            expect(mockPrismaService.scorecard.delete).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
             });
         });
 
         it("should return 404 if scorecard to delete not found", async () => {
-            jest.spyOn(prisma.scorecard, "findUnique").mockResolvedValue(null);
+            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
 
-            await request(app).delete(`/api/v1/scorecard/${uuidv4()}`).expect(404).expect("Content-Type", /json/);
+            await request(app.getHttpServer())
+                .delete(`/api/v1/scorecard/${uuidv4()}`)
+                .expect(404)
+                .expect("Content-Type", /json/);
         });
     });
 });
+
+// Create a mock PrismaService with type assertion for jest functions
+const mockPrismaService = {
+    scorecard: {
+        findMany: jest.fn() as any,
+        findUnique: jest.fn() as any,
+        create: jest.fn() as any,
+        update: jest.fn() as any,
+        delete: jest.fn() as any,
+    },
+    holeScore: {
+        createMany: jest.fn() as any,
+        deleteMany: jest.fn() as any,
+    },
+    $connect: jest.fn() as any,
+    $disconnect: jest.fn() as any,
+} as any;

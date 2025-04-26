@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpCode } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Body,
+    Param,
+    Query,
+    HttpCode,
+    HttpStatus,
+    UsePipes,
+    ValidationPipe,
+    BadRequestException,
+} from "@nestjs/common";
 import { Scorecard, HoleScore } from "@prisma/client";
 
 import { CreateScorecardDto, UpdateScorecardDto, ScorecardFilterDto } from "./dto/scorecard.dto";
@@ -28,8 +42,24 @@ export class ScorecardController {
      * Create a new scorecard
      */
     @Post()
-    createScorecard(@Body() data: CreateScorecardDto): Promise<Scorecard & { scores: HoleScore[] }> {
-        return this.scorecardService.createScorecard(data);
+    @HttpCode(HttpStatus.CREATED)
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        }),
+    )
+    async createScorecard(@Body() data: CreateScorecardDto): Promise<Scorecard & { scores: HoleScore[] }> {
+        try {
+            return await this.scorecardService.createScorecard(data);
+        } catch (error: Error | unknown) {
+            if (error instanceof Error && error.name === "ValidationError") {
+                throw new BadRequestException(error.message);
+            }
+            throw error;
+        }
     }
 
     /**

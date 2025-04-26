@@ -20,11 +20,11 @@ export class HoleScoreDto {
 
     @IsInt()
     @Min(1)
-    holeNumber: number;
+    holeNumber!: number;
 
     @IsInt()
     @Min(1)
-    score: number;
+    score!: number;
 
     @IsOptional()
     @IsInt()
@@ -38,10 +38,10 @@ export class HoleScoreDto {
 
 export class CreateScorecardDto {
     @IsString()
-    playerName: string;
+    playerName!: string;
 
     @IsString()
-    courseId: string;
+    courseId!: string;
 
     @IsOptional()
     @IsDate()
@@ -49,7 +49,7 @@ export class CreateScorecardDto {
     date?: Date;
 
     @IsNumber()
-    totalScore: number;
+    totalScore!: number;
 
     @IsOptional()
     @IsString()
@@ -65,15 +65,15 @@ export class CreateScorecardDto {
 export class UpdateScorecardDto extends CreateScorecardDto {
     @IsOptional()
     @IsString()
-    playerName: string;
+    declare playerName: string;
 
     @IsOptional()
     @IsString()
-    courseId: string;
+    declare courseId: string;
 
     @IsOptional()
     @IsNumber()
-    totalScore: number;
+    declare totalScore: number;
 }
 
 export class ScorecardFilterDto {

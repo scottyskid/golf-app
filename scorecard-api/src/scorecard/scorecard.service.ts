@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { Scorecard, HoleScore } from "@prisma/client";
 
 import { PrismaService } from "../prisma/prisma.service";
 
 import { CreateScorecardDto, UpdateScorecardDto, ScorecardFilterDto } from "./dto/scorecard.dto";
+
+// Define interface for Prisma errors
+interface PrismaError extends Error {
+    code?: string;
+}
 
 @Injectable()
 export class ScorecardService {
@@ -49,31 +54,57 @@ export class ScorecardService {
      * Create a new scorecard with hole scores
      */
     async createScorecard(data: CreateScorecardDto): Promise<Scorecard & { scores: HoleScore[] }> {
-        const { scores, ...scorecardData } = data;
+        try {
+            // Validate required fields
+            if (!data.playerName || !data.courseId) {
+                throw new BadRequestException("PlayerName and courseId are required fields");
+            }
 
-        // Create the scorecard
-        const scorecard = await this.prisma.scorecard.create({
-            data: {
-                ...scorecardData,
-                date: data.date ? new Date(data.date) : new Date(),
-            },
-        });
+            const { scores, ...scorecardData } = data;
 
-        // Create hole scores if provided
-        if (scores && scores.length > 0) {
-            await this.prisma.holeScore.createMany({
-                data: scores.map((score) => ({
-                    ...score,
-                    scorecardId: scorecard.id,
-                })),
+            // Create the scorecard
+            const scorecard = await this.prisma.scorecard.create({
+                data: {
+                    ...scorecardData,
+                    date: data.date ? new Date(data.date) : new Date(),
+                },
             });
-        }
 
-        // Return the created scorecard with scores
-        return this.prisma.scorecard.findUnique({
-            where: { id: scorecard.id },
-            include: { scores: true },
-        }) as Promise<Scorecard & { scores: HoleScore[] }>;
+            // Create hole scores if provided
+            if (scores && scores.length > 0) {
+                await this.prisma.holeScore.createMany({
+                    data: scores.map((score) => ({
+                        ...score,
+                        scorecardId: scorecard.id,
+                    })),
+                });
+            }
+
+            // Return the created scorecard with scores
+            return this.prisma.scorecard.findUnique({
+                where: { id: scorecard.id },
+                include: { scores: true },
+            }) as Promise<Scorecard & { scores: HoleScore[] }>;
+        } catch (error: Error | unknown) {
+            // Handle database or validation errors
+            if (error instanceof Error) {
+                // Check for Prisma-specific error
+                const prismaError = error as PrismaError;
+                if (prismaError.code === "P2002") {
+                    throw new BadRequestException("A scorecard with this ID already exists");
+                }
+
+                // Re-throw NestJS errors
+                if (error instanceof BadRequestException) {
+                    throw error;
+                }
+
+                // For any other errors
+                throw new BadRequestException(error.message || "Failed to create scorecard");
+            }
+
+            throw new BadRequestException("Failed to create scorecard");
+        }
     }
 
     /**
