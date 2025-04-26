@@ -24,7 +24,7 @@ async function bootstrap(): Promise<void> {
     SwaggerDocModule.setup(app);
 
     // Start server
-    const port = process.env.PORT || 3001;
+    const port = process.env.PORT || 3000;
     await app.listen(port);
     console.log(`Server running on port ${port}`);
     console.log(`OpenAPI documentation available at http://localhost:${port}/docs`);

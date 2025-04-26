@@ -16,6 +16,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      
+  scorecard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scorecard-api
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/scorecard
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres-data: 

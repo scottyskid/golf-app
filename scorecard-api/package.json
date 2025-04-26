@@ -18,8 +18,9 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:up": "npm run lock && docker compose up -d",
+    "docker:down": "docker compose down",
+    "lock": "npm i --package-lock-only --workspaces=false"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.16",

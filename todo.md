@@ -1,6 +1,5 @@
 
 - setup integration and e2e tests
-- have package working in a dockerfile
 - check against archetectural patterns like clean archetecture
 - understand more about dependancy injection
 - confirm test coverage
@@ -13,3 +12,5 @@
     - add in the aspire dashboard to the docker compose
 - clean up endpoints (where should health be? where should version be?)
     - see if nestjs has built in health checks
+- add a central service for database connection
+    - can we do this for both testing and production?

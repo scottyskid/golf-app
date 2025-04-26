@@ -16,7 +16,8 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint:fix": "eslint . --ext .ts --fix",
+    "lock": "npm run lock --workspaces"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
