@@ -4,8 +4,8 @@
   "description": "Golf scorecard tracking API",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "ts-node --transpile-only src/index.ts",
+    "start": "node dist/main.js",
+    "dev": "ts-node --transpile-only src/main.ts",
     "start:ts": "ts-node src/index.ts",
     "build": "tsc",
     "test": "jest",
@@ -21,12 +21,20 @@
     "docker:down": "docker compose down"
   },
   "dependencies": {
+    "@nestjs/common": "^11.0.16",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.16",
+    "@nestjs/platform-express": "^11.0.16",
     "@prisma/client": "^6.6.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "morgan": "^1.10.0",
+    "nestjs": "^0.0.1",
+    "reflect-metadata": "^0.2.2",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

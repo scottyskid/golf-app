@@ -1,27 +1,26 @@
 # Golf Scorecard Web App - Agent Prompt
 
 ## Project Overview
-This project is a golf scorecard tracking web application with a modern architecture featuring a React-based frontend and Express.js backend. The application allows users to create, track, and analyze golf scorecards.
+This project is a golf scorecard tracking web application with a modern architecture featuring a React-based frontend and Nest.js backend. The application allows users to create, track, and analyze golf scorecards.
 
 ## Tech Stack
 
 ### API
-- Express.js as the Node.js framework
+- Nest.js as the Node.js framework
 - TypeScript for type safety
 - PostgreSQL for database
 - Prisma as ORM
-- JWT for authentication
 
 ### Development Tools
 - ESLint for code linting
 - Prettier for code formatting
-- Jest/React Testing Library for testing
+- Jest Testing Library for testing
 - Git for version control
 
 ## Project Structure
 
 ```
-├── golf-scorecard-api/                  # Backend Express application
+├── golf-scorecard-api/                  # Backend nestjs application
 │   ├── src/
 │   │   ├── controllers/     # Route controllers
 │   │   ├── middleware/      # Express middleware
