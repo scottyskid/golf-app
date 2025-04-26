@@ -1,76 +1,176 @@
 # Scorecard API
 
-A simplified RESTful API for tracking golf scorecards. This API provides endpoints to manage scorecards with no authentication required.
+A REST API for tracking and managing golf scorecards. This application allows golfers to record, retrieve, update, and delete their golf scorecard data, including hole-by-hole scores, putts, and fairway hits.
 
-## Project Structure
+## Technologies
 
-This project is organized as follows:
+- **Framework**: NestJS
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Testing**: Jest
+- **Containerization**: Docker
 
-- `src/`: Nest JS TypeScript backend API with collocated test files
-- `docker-compose.yml`: Docker configuration for the API and database
+## Prerequisites
 
-## Technologies Used
-
-- Node.js with Express
-- TypeScript
-- PostgreSQL database
-- Prisma ORM
+- Node.js (v22.14.0)
+- npm (v10.9.2)
 - Docker and Docker Compose
 
-## Getting Started
+## Installation and Setup
 
-### Prerequisites
+1. **Clone the repository**
 
-- Docker and Docker Compose installed on your machine
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Running the API
+3. **Environment Variables**
+   
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/scorecard?schema=public"
+   PORT=3001
+   ```
 
-2. Start the application
-```bash
-docker-compose up
-```
+4. **Start the database**
+   ```bash
+   npm run docker:up
+   ```
 
-This will:
-- Start PostgreSQL database
-- Set up and start the backend Express API
+5. **Generate Prisma client and run migrations**
+   ```bash
+   npm run prisma:generate
+   npm run prisma:migrate
+   ```
 
-The API will be available at: http://localhost:3001
+6. **Build the application**
+   ```bash
+   npm run build
+   ```
 
-To stop the application:
-```bash
-docker-compose down
-```
+7. **Start the application**
+   
+   For production:
+   ```bash
+   npm start
+   ```
 
-To rebuild containers after making changes:
-```bash
-docker-compose up --build
-```
+   For development (with live reload):
+   ```bash
+   npm run dev
+   ```
 
 ## Testing
 
-Tests are collocated with the source code files they test. For example:
-- `src/health/health.controller.ts` → `src/health/health.controller.test.ts`
-- `src/scorecard/scorecard.service.ts` → `src/scorecard/scorecard.service.test.ts`
+- **Run all tests**
+  ```bash
+  npm test
+  ```
 
-To run tests:
-```bash
-npm test
+- **Run unit tests only**
+  ```bash
+  npm run test:unit
+  ```
+
+- **Run integration tests only**
+  ```bash
+  npm run test:integration
+  ```
+
+- **Generate test coverage report**
+  ```bash
+  npm run test:coverage
+  ```
+
+## API Reference
+
+All endpoints are served at `http://localhost:3001`
+
+### Health Check
+- **GET** `/health` - Check if the API is running
+
+### Scorecards
+- **GET** `/api/v1/scorecard` - Get all scorecards (optional query params: `playerName`, `courseId`)
+- **GET** `/api/v1/scorecard/:id` - Get a specific scorecard by ID
+- **POST** `/api/v1/scorecard` - Create a new scorecard
+- **PUT** `/api/v1/scorecards/:id` - Update a scorecard
+- **DELETE** `/api/v1/scorecards/:id` - Delete a scorecard
+
+For detailed request/response formats, see [app-spec.md](./app-spec.md).
+
+## Development
+
+### Code Quality
+
+- **Format code**
+  ```bash
+  npm run format
+  ```
+
+- **Lint code**
+  ```bash
+  npm run lint
+  ```
+
+- **Fix lint issues**
+  ```bash
+  npm run lint:fix
+  ```
+
+### Debugging
+
+- **Debug mode**
+  ```bash
+  npm run debug
+  ```
+
+- **Debug with watch mode**
+  ```bash
+  npm run debug:watch
+  ```
+
+### Database Management
+
+- **Generate Prisma client**
+  ```bash
+  npm run prisma:generate
+  ```
+
+- **Run database migrations**
+  ```bash
+  npm run prisma:migrate
+  ```
+
+## Project Structure
+
+```
+src/
+├── common/        # Common utilities, filters, and pipes
+├── health/        # Health check module
+├── prisma/        # Prisma service and module
+├── scorecard/     # Scorecard domain (controllers, services, DTOs)
+├── tests/         # Test utilities and setup
+├── app.module.ts  # Main application module
+└── main.ts        # Application entry point
+prisma/            # ORM for database schema and migrations
 ```
 
-For unit tests only:
-```bash
-npm run test:unit
-```
+## Docker
 
-For integration tests:
-```bash
-npm run test:integration
-```
+The application includes Docker Compose configuration for PostgreSQL:
+
+- **Start containers**
+  ```bash
+  npm run docker:up
+  ```
+
+- **Stop containers**
+  ```bash
+  npm run docker:down
+  ```
 
 ## License
 
-[MIT](LICENSE)
-
-## Acknowledgements
-
-This project was created as a simplified learning exercise for API development with Express, Prisma, and Docker.
+This project is licensed under the MIT License - see the package.json file for details. 
