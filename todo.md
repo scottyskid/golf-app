@@ -1,7 +1,15 @@
-- move the repo to stop running in a windows file system for performance- remove unused scripts from package.json
-- check integration tests are functioning 
 - test set up and tear down are stubbs - either add something meaning full to them or remove them from the process
-- update packages to latest versions where possible
-- have package to be able to debug while running
+  - pull out prisma mocks from tests into seperate structure
+- have package to be able to debug while running and with tests
+- setup integration and e2e tests
 - have package working in a dockerfile
- 
+- check against archetectural patterns like clean archetecture
+- understand more about dependancy injection
+- confirm test coverage
+- ensure READMEs and documentation are actually up to date with recent changes
+- run prisma migrations `prisma migrate dev`
+- update api specifications to use openAPI and surface docs on an endpoint
+- Error handling and validation
+    - Use class-validator and class-transformer (already dependencies) effectively within your DTOs (Data Transfer Objects) in NestJS to validate incoming request bodies and query parameters.
+    - Implement consistent error handling. NestJS filters can help centralize error logging and formatting responses (as hinted in app-spec.md).
+- fix up environment varables and add `.example.env`

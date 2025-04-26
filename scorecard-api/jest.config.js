@@ -1,7 +1,7 @@
 module.exports = {
     preset: "ts-jest",
     testEnvironment: "node",
-    roots: ["<rootDir>/src/", "<rootDir>/tests/"],
+    roots: ["<rootDir>/src/", "<rootDir>/src/tests/"],
     transform: {
         "^.+\\.tsx?$": "ts-jest",
     },
@@ -9,9 +9,9 @@ module.exports = {
     testMatch: ["**/*.test.ts"],
     coverageDirectory: "coverage",
     collectCoverageFrom: ["src/**/*.{ts,tsx,js,jsx}", "!src/**/*.d.ts"],
-    globalSetup: "<rootDir>/tests/setup.ts",
-    globalTeardown: "<rootDir>/tests/teardown.ts",
-    setupFilesAfterEnv: ["<rootDir>/tests/testSetup.ts"],
+    globalSetup: "<rootDir>/src/tests/setup.ts",
+    globalTeardown: "<rootDir>/src/tests/teardown.ts",
+    setupFilesAfterEnv: ["<rootDir>/src/tests/testSetup.ts"],
     testPathIgnorePatterns: ["/node_modules/", "/build/", "/dist/"],
     verbose: false,
     transformIgnorePatterns: ["node_modules/(?!(chai|superagent)/)"],

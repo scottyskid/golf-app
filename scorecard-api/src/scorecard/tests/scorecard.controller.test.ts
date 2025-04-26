@@ -5,12 +5,11 @@ import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 
 // Disable the no-explicit-any rule for this test file
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { PrismaModule } from "../prisma/prisma.module";
-import { PrismaService } from "../prisma/prisma.service";
-
-import { ScorecardModule } from "./scorecard.module";
+import { PrismaModule } from "../../prisma/prisma.module";
+import { PrismaService } from "../../prisma/prisma.service";
+import { prismaMock } from "../../tests/testSetup";
+import { ScorecardModule } from "../scorecard.module";
 
 // Mock data for sending in requests (matches the DTO)
 const scorecardPayload = {
@@ -33,6 +32,14 @@ const scorecardPayload = {
 const mockScorecard = {
     id: uuidv4(),
     ...scorecardPayload,
+    date: new Date(scorecardPayload.date),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+};
+
+// Complete mock data for validation with json valid response
+const mockScorecardResponse = {
+    ...mockScorecard, // Include all properties from mockScorecard to ensure id and others are the same
     date: new Date(scorecardPayload.date).toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -63,6 +70,11 @@ const updatedScorecard = {
     ...updatePayload,
 };
 
+const updatedScorecardResponse = {
+    ...mockScorecardResponse,
+    ...updatePayload,
+};
+
 describe("Scorecard API", () => {
     let app: INestApplication;
 
@@ -73,7 +85,7 @@ describe("Scorecard API", () => {
             imports: [ScorecardModule, PrismaModule],
         })
             .overrideProvider(PrismaService)
-            .useValue(mockPrismaService)
+            .useValue(prismaMock)
             .compile();
 
         app = moduleFixture.createNestApplication();
@@ -89,7 +101,7 @@ describe("Scorecard API", () => {
 
     describe("GET /api/v1/scorecard", () => {
         it("should return all scorecards", async () => {
-            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
+            prismaMock.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
             const response = await request(app.getHttpServer())
                 .get("/api/v1/scorecard")
@@ -102,7 +114,7 @@ describe("Scorecard API", () => {
         });
 
         it("should filter scorecards by playerName", async () => {
-            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
+            prismaMock.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
             const response = await request(app.getHttpServer())
                 .get("/api/v1/scorecard?playerName=Test Player")
@@ -110,7 +122,7 @@ describe("Scorecard API", () => {
                 .expect("Content-Type", /json/);
 
             expect(Array.isArray(response.body)).toBe(true);
-            expect(mockPrismaService.scorecard.findMany).toHaveBeenCalledWith(
+            expect(prismaMock.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
                         playerName: "Test Player",
@@ -120,7 +132,7 @@ describe("Scorecard API", () => {
         });
 
         it("should filter scorecards by courseId", async () => {
-            mockPrismaService.scorecard.findMany.mockResolvedValue([mockScorecard]);
+            prismaMock.scorecard.findMany.mockResolvedValue([mockScorecard]);
 
             const response = await request(app.getHttpServer())
                 .get(`/api/v1/scorecard?courseId=${mockScorecard.courseId}`)
@@ -128,7 +140,7 @@ describe("Scorecard API", () => {
                 .expect("Content-Type", /json/);
 
             expect(Array.isArray(response.body)).toBe(true);
-            expect(mockPrismaService.scorecard.findMany).toHaveBeenCalledWith(
+            expect(prismaMock.scorecard.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: expect.objectContaining({
                         courseId: mockScorecard.courseId,
@@ -140,22 +152,22 @@ describe("Scorecard API", () => {
 
     describe("GET /api/v1/scorecard/:id", () => {
         it("should return a specific scorecard by ID", async () => {
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
+            prismaMock.scorecard.findUnique.mockResolvedValue(mockScorecard);
 
             const response = await request(app.getHttpServer())
                 .get(`/api/v1/scorecard/${mockScorecard.id}`)
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            expect(response.body).toEqual(mockScorecard);
-            expect(mockPrismaService.scorecard.findUnique).toHaveBeenCalledWith({
+            expect(response.body).toEqual(mockScorecardResponse);
+            expect(prismaMock.scorecard.findUnique).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 include: { scores: true },
             });
         });
 
         it("should return 404 if scorecard not found", async () => {
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
+            prismaMock.scorecard.findUnique.mockResolvedValue(null);
 
             await request(app.getHttpServer())
                 .get(`/api/v1/scorecard/${uuidv4()}`)
@@ -166,9 +178,9 @@ describe("Scorecard API", () => {
 
     describe("POST /api/v1/scorecard", () => {
         it("should create a new scorecard", async () => {
-            mockPrismaService.scorecard.create.mockResolvedValue(mockScorecard);
-            mockPrismaService.holeScore.createMany.mockResolvedValue({ count: 1 });
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
+            prismaMock.scorecard.create.mockResolvedValue(mockScorecard);
+            prismaMock.holeScore.createMany.mockResolvedValue({ count: 1 });
+            prismaMock.scorecard.findUnique.mockResolvedValue(mockScorecard);
 
             const response = await request(app.getHttpServer())
                 .post("/api/v1/scorecard")
@@ -177,7 +189,7 @@ describe("Scorecard API", () => {
                 .expect("Content-Type", /json/);
 
             // Verify that the create method was called with the correct data
-            expect(mockPrismaService.scorecard.create).toHaveBeenCalledWith(
+            expect(prismaMock.scorecard.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     data: expect.objectContaining({
                         playerName: scorecardPayload.playerName,
@@ -188,7 +200,7 @@ describe("Scorecard API", () => {
             );
 
             // Verify hole scores were created
-            expect(mockPrismaService.holeScore.createMany).toHaveBeenCalled();
+            expect(prismaMock.holeScore.createMany).toHaveBeenCalled();
 
             // Verify that the response contains a success indicator
             expect(response.body).toBeDefined();
@@ -211,13 +223,13 @@ describe("Scorecard API", () => {
 
     describe("PUT /api/v1/scorecard/:id", () => {
         it("should update an existing scorecard", async () => {
-            mockPrismaService.scorecard.findUnique
+            prismaMock.scorecard.findUnique
                 .mockResolvedValueOnce(mockScorecard) // First call to check if exists
                 .mockResolvedValueOnce(updatedScorecard); // Second call to get updated result
 
-            mockPrismaService.scorecard.update.mockResolvedValue(updatedScorecard);
-            mockPrismaService.holeScore.deleteMany.mockResolvedValue({ count: 1 });
-            mockPrismaService.holeScore.createMany.mockResolvedValue({ count: 2 });
+            prismaMock.scorecard.update.mockResolvedValue(updatedScorecard);
+            prismaMock.holeScore.deleteMany.mockResolvedValue({ count: 1 });
+            prismaMock.holeScore.createMany.mockResolvedValue({ count: 2 });
 
             const response = await request(app.getHttpServer())
                 .put(`/api/v1/scorecard/${mockScorecard.id}`)
@@ -225,8 +237,8 @@ describe("Scorecard API", () => {
                 .expect(200)
                 .expect("Content-Type", /json/);
 
-            expect(response.body).toEqual(updatedScorecard);
-            expect(mockPrismaService.scorecard.update).toHaveBeenCalledWith({
+            expect(response.body).toEqual(updatedScorecardResponse);
+            expect(prismaMock.scorecard.update).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
                 data: expect.objectContaining({
                     playerName: updatePayload.playerName,
@@ -236,15 +248,15 @@ describe("Scorecard API", () => {
             });
 
             // Verify that deleteMany and createMany were called for scores
-            expect(mockPrismaService.holeScore.deleteMany).toHaveBeenCalledWith({
+            expect(prismaMock.holeScore.deleteMany).toHaveBeenCalledWith({
                 where: { scorecardId: mockScorecard.id },
             });
 
-            expect(mockPrismaService.holeScore.createMany).toHaveBeenCalled();
+            expect(prismaMock.holeScore.createMany).toHaveBeenCalled();
         });
 
         it("should return 404 if scorecard to update not found", async () => {
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
+            prismaMock.scorecard.findUnique.mockResolvedValue(null);
 
             await request(app.getHttpServer())
                 .put(`/api/v1/scorecard/${uuidv4()}`)
@@ -256,18 +268,18 @@ describe("Scorecard API", () => {
 
     describe("DELETE /api/v1/scorecard/:id", () => {
         it("should delete a scorecard", async () => {
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(mockScorecard);
-            mockPrismaService.scorecard.delete.mockResolvedValue(mockScorecard);
+            prismaMock.scorecard.findUnique.mockResolvedValue(mockScorecard);
+            prismaMock.scorecard.delete.mockResolvedValue(mockScorecard);
 
             await request(app.getHttpServer()).delete(`/api/v1/scorecard/${mockScorecard.id}`).expect(204);
 
-            expect(mockPrismaService.scorecard.delete).toHaveBeenCalledWith({
+            expect(prismaMock.scorecard.delete).toHaveBeenCalledWith({
                 where: { id: mockScorecard.id },
             });
         });
 
         it("should return 404 if scorecard to delete not found", async () => {
-            mockPrismaService.scorecard.findUnique.mockResolvedValue(null);
+            prismaMock.scorecard.findUnique.mockResolvedValue(null);
 
             await request(app.getHttpServer())
                 .delete(`/api/v1/scorecard/${uuidv4()}`)
@@ -276,20 +288,3 @@ describe("Scorecard API", () => {
         });
     });
 });
-
-// Create a mock PrismaService with type assertion for jest functions
-const mockPrismaService = {
-    scorecard: {
-        findMany: jest.fn() as any,
-        findUnique: jest.fn() as any,
-        create: jest.fn() as any,
-        update: jest.fn() as any,
-        delete: jest.fn() as any,
-    },
-    holeScore: {
-        createMany: jest.fn() as any,
-        deleteMany: jest.fn() as any,
-    },
-    $connect: jest.fn() as any,
-    $disconnect: jest.fn() as any,
-} as any;
