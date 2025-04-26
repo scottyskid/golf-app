@@ -1,13 +1,15 @@
 
-- ensure READMEs and documentation are actually up to date with recent changes
 - setup integration and e2e tests
 - have package working in a dockerfile
 - check against archetectural patterns like clean archetecture
 - understand more about dependancy injection
 - confirm test coverage
 - run prisma migrations `prisma migrate dev`
-- update api specifications to use openAPI and surface docs on an endpoint
 - Error handling and validation
     - Use class-validator and class-transformer (already dependencies) effectively within your DTOs (Data Transfer Objects) in NestJS to validate incoming request bodies and query parameters.
     - Implement consistent error handling. NestJS filters can help centralize error logging and formatting responses (as hinted in app-spec.md).
 - fix up environment varables and add `.example.env`
+- add proper logging module with an otel sink
+    - add in the aspire dashboard to the docker compose
+- clean up endpoints (where should health be? where should version be?)
+    - see if nestjs has built in health checks

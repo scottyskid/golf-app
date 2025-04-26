@@ -9,6 +9,7 @@ A REST API for tracking and managing golf scorecards. This application allows go
 - **Database**: PostgreSQL
 - **ORM**: Prisma
 - **Testing**: Jest
+- **API Documentation**: OpenAPI/Swagger
 - **Containerization**: Docker
 
 ## Prerequisites
@@ -88,6 +89,20 @@ A REST API for tracking and managing golf scorecards. This application allows go
 
 All endpoints are served at `http://localhost:3001`
 
+### API Documentation
+
+The API is fully documented using OpenAPI/Swagger. You can access the interactive documentation at:
+
+```
+http://localhost:3001/api-docs
+```
+
+This interface allows you to:
+- Browse all available endpoints
+- View request/response schemas
+- Test API calls directly from the browser
+- Download the OpenAPI specification
+
 ### Health Check
 - **GET** `/health` - Check if the API is running
 
@@ -98,7 +113,7 @@ All endpoints are served at `http://localhost:3001`
 - **PUT** `/api/v1/scorecards/:id` - Update a scorecard
 - **DELETE** `/api/v1/scorecards/:id` - Delete a scorecard
 
-For detailed request/response formats, see [app-spec.md](./app-spec.md).
+For detailed request/response formats, see the OpenAPI documentation or [app-spec.md](./app-spec.md).
 
 ## Development
 
@@ -148,6 +163,8 @@ For detailed request/response formats, see [app-spec.md](./app-spec.md).
 ```
 src/
 ├── common/        # Common utilities, filters, and pipes
+│   ├── filters/   # Exception filters
+│   └── swagger/   # OpenAPI/Swagger configuration and models
 ├── health/        # Health check module
 ├── prisma/        # Prisma service and module
 ├── scorecard/     # Scorecard domain (controllers, services, DTOs)

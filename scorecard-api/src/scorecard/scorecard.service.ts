@@ -3,7 +3,7 @@ import { Scorecard, HoleScore } from "@prisma/client";
 
 import { PrismaService } from "../prisma/prisma.service";
 
-import { CreateScorecardDto, UpdateScorecardDto, ScorecardFilterDto } from "./dto/scorecard.dto";
+import { CreateScorecardDto, UpdateScorecardDto, ScorecardFilterDto } from "./scorecard.dto";
 
 // Define interface for Prisma errors
 interface PrismaError extends Error {
