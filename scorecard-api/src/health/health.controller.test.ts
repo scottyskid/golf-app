@@ -3,7 +3,7 @@ import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import request from "supertest";
 
-import { HealthModule } from "../../../src/health/health.module";
+import { HealthModule } from "./health.module";
 
 describe("Health Check API", () => {
     let app: INestApplication;

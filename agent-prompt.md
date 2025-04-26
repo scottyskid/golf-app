@@ -17,34 +17,6 @@ This project is a golf scorecard tracking web application with a modern architec
 - Jest Testing Library for testing
 - Git for version control
 
-## Project Structure
-
-```
-├── golf-scorecard-api/                  # Backend nestjs application
-│   ├── src/
-│   │   ├── controllers/     # Route controllers
-│   │   ├── middleware/      # Express middleware
-│   │   ├── models/          # Data models
-│   │   ├── routes/          # Express routes
-│   │   ├── services/        # Business logic
-│   │   ├── utils/           # Utility functions
-│   │   ├── types/           # TypeScript type definitions
-│   │   └── app.ts           # Express application setup
-│   ├── prisma/              # Prisma schema and migrations
-│   ├── package.json
-│   └── tsconfig.json
-└── README.md
-```
-
-## Key Features to Implement
-
-
-3. **Scorecard Creation and Tracking**
-   - Create new scorecards
-   - Track scores per hole
-
-## Data Models
-
 
 ## API Endpoints and Data Models
 

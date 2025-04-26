@@ -7,9 +7,10 @@ import { v4 as uuidv4 } from "uuid";
 // Disable the no-explicit-any rule for this test file
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { PrismaModule } from "../../../src/prisma/prisma.module";
-import { PrismaService } from "../../../src/prisma/prisma.service";
-import { ScorecardModule } from "../../../src/scorecard/scorecard.module";
+import { PrismaModule } from "../prisma/prisma.module";
+import { PrismaService } from "../prisma/prisma.service";
+
+import { ScorecardModule } from "./scorecard.module";
 
 // Mock data for sending in requests (matches the DTO)
 const scorecardPayload = {

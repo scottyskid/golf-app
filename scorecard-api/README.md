@@ -6,7 +6,7 @@ A simplified RESTful API for tracking golf scorecards. This API provides endpoin
 
 This project is organized as follows:
 
-- `src/`: Express.js TypeScript backend API
+- `src/`: Nest JS TypeScript backend API with collocated test files
 - `docker-compose.yml`: Docker configuration for the API and database
 
 ## Technologies Used
@@ -46,6 +46,26 @@ To rebuild containers after making changes:
 docker-compose up --build
 ```
 
+## Testing
+
+Tests are collocated with the source code files they test. For example:
+- `src/health/health.controller.ts` → `src/health/health.controller.test.ts`
+- `src/scorecard/scorecard.service.ts` → `src/scorecard/scorecard.service.test.ts`
+
+To run tests:
+```bash
+npm test
+```
+
+For unit tests only:
+```bash
+npm run test:unit
+```
+
+For integration tests:
+```bash
+npm run test:integration
+```
 
 ## License
 
