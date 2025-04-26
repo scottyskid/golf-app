@@ -1,12 +1,10 @@
-- test set up and tear down are stubbs - either add something meaning full to them or remove them from the process
-  - pull out prisma mocks from tests into seperate structure
-- have package to be able to debug while running and with tests
+
+- ensure READMEs and documentation are actually up to date with recent changes
 - setup integration and e2e tests
 - have package working in a dockerfile
 - check against archetectural patterns like clean archetecture
 - understand more about dependancy injection
 - confirm test coverage
-- ensure READMEs and documentation are actually up to date with recent changes
 - run prisma migrations `prisma migrate dev`
 - update api specifications to use openAPI and surface docs on an endpoint
 - Error handling and validation

@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node dist/main.js",
     "dev": "ts-node --transpile-only src/main.ts",
+    "debug": "node --inspect-brk -r ts-node/register src/main.ts",
+    "debug:watch": "nodemon --inspect -e ts --exec node -r ts-node/register src/main.ts",
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",

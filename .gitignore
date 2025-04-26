@@ -1,4 +1,5 @@
 node_modules/
+dist/
 
 # Ignore .env files in any directory
 .env
