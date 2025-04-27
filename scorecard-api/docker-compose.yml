@@ -55,6 +55,7 @@ services:
       # OpenTelemetry configuration
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
       OTEL_RESOURCE_ATTRIBUTES: "deployment.environment.name=dev"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
     ports:
       - "3000:3000"
     healthcheck:

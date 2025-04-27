@@ -17,3 +17,10 @@
 - implement k8s locally
     - there is a different otel collector for k8s
 - add a favicon
+- can `otel-instrumentation.ts` be made into an actual service i.e. `otel.service.ts`
+- check for `TODO: logs -` items that I have marked around the place
+    - maybe use env var `OTEL_LOG_LEVEL` vs custom defined `LOG_LEVEL` this could allow for different logging to the console vs OTEL
+- add correlationIds to request headers and include them in logs and traces
+- see if logger can log uncaught errors
+- update scorecard service to use new logger service
+- show application (request) logs in aspire dashboard

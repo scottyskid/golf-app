@@ -188,6 +188,56 @@ The application includes Docker Compose configuration for PostgreSQL:
   npm run docker:down
   ```
 
+## Logging
+
+The application uses a unified logging solution that integrates with OpenTelemetry for consistent observability. The logging system supports multiple output formats and destinations.
+
+### Configuration
+
+Logging can be configured through environment variables:
+
+- `LOG_LEVEL`: Sets the minimum log level (default: `info`). Options: `error`, `warn`, `info`, `debug`, `verbose`
+- `LOG_TO_FILE`: Whether to log to files in addition to console (default: `false`)
+- `NODE_ENV`: Determines log format (json in production, colorized in development)
+
+### Usage
+
+The logger can be injected into any NestJS component:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { LoggerService } from '../common/logger/logger.service';
+
+@Injectable()
+export class SomeService {
+  constructor(private readonly logger: LoggerService) {
+    this.logger.setContext('SomeService');
+  }
+
+  someMethod() {
+    // Basic logging
+    this.logger.info('Processing request');
+    
+    // With additional metadata
+    this.logger.debug('User details', null, { userId: '123', action: 'login' });
+    
+    // Error logging
+    try {
+      // Some operation
+    } catch (error) {
+      this.logger.error('Operation failed', null, { 
+        error: error.message,
+        stack: error.stack 
+      });
+    }
+  }
+}
+```
+
+### Integration with OpenTelemetry
+
+Logs are automatically correlated with traces and spans when using the OpenTelemetry context. This allows for unified observability across logs, metrics, and traces.
+
 ## License
 
 This project is licensed under the MIT License - see the package.json file for details. 
