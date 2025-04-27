@@ -5,12 +5,11 @@
 - Error handling and validation
     - Use class-validator and class-transformer (already dependencies) effectively within your DTOs (Data Transfer Objects) in NestJS to validate incoming request bodies and query parameters.
     - Implement consistent error handling. NestJS filters can help centralize error logging and formatting responses (as hinted in app-spec.md).
-- add proper logging module with an otel sink
 - add authentication to aspire dashboard
-- fix metrics being sent to unknown service in aspire dashboard
+- fix metrics and logs being sent to unknown service in aspire dashboard
 - clean up endpoints (where should health be? where should version be?)
     - see if nestjs has built in health checks
-    - add health check to dockerfile
+    - add health check to dockercompose for aspire and otel collector
 - add a central service for database connection/auth
     - can we do this for both testing and production?
 - is it possible to get hot reloading in the container?
