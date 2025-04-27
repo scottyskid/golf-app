@@ -3,7 +3,14 @@ import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentation
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-grpc";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-grpc";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import {
+    resourceFromAttributes,
+    detectResources,
+    envDetector,
+    hostDetector,
+    processDetector,
+    osDetector,
+} from "@opentelemetry/resources";
 import { LoggerProvider, SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
@@ -24,7 +31,13 @@ const resource = resourceFromAttributes({
 // initialize the Logger provider.
 // This does not seem supported in the NodeSDK even though there is a param `logRecordProcessor`
 // at v0.200.0 so we are doing it this way instead
-const loggerProvider = new LoggerProvider();
+const loggerProvider = new LoggerProvider({
+    // without resource we don't have proper service.name, service.version correlated with logs
+    resource: detectResources({
+        // this have to be manually adjusted to match SDK OTEL_NODE_RESOURCE_DETECTORS
+        detectors: [envDetector, processDetector, hostDetector, osDetector],
+    }).merge(resource),
+});
 
 // Add a processor to export log record to otel collector
 // can add in file or console exporter here too if you want to bypass the collector
@@ -46,6 +59,10 @@ export const otelSDK = new NodeSDK({
             "@opentelemetry/instrumentation-http": { enabled: true },
             "@opentelemetry/instrumentation-express": { enabled: true },
             "@opentelemetry/instrumentation-nestjs-core": { enabled: true },
+            // instrumention-winston is not working as expected so has a manual hack to include
+            // https://github.com/open-telemetry/opentelemetry-js-contrib/issues/2090
+            // if you ever have an issue with duplicate logs it is likely that this is working again
+            // and the hack in the logger.service could possible be removed
             "@opentelemetry/instrumentation-winston": { enabled: true },
             "@opentelemetry/instrumentation-pg": { enabled: true },
         }),

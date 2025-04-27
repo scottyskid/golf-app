@@ -49,7 +49,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: scorecard-api
-    command: sh -c "npx prisma migrate dev && node dist/main.js"
+    command: sh -c "npx prisma migrate dev --skip-generate && node dist/main.js"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/scorecard
       NODE_ENV: development

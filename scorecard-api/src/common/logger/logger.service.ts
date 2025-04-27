@@ -1,6 +1,7 @@
 import { Injectable, LoggerService as NestLoggerService } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { trace, context } from "@opentelemetry/api";
+import { OpenTelemetryTransportV3 } from "@opentelemetry/winston-transport";
 import { createLogger, format, Logger, transports } from "winston";
 
 import { ILogger } from "./logger.interface";
@@ -63,13 +64,16 @@ export class LoggerService implements ILogger, NestLoggerService {
     }
 
     private createLogger(): Logger {
-        // TODO: logs - what are these configService value?
+        // TODO: logs - what are these configService value? can they not be hard set?
         const logLevel = this.configService.get<string>("LOG_LEVEL", "info");
         const environment = this.configService.get<string>("NODE_ENV", "development");
-        const serviceName = this.configService.get<string>("SERVICE_NAME", "scorecard-api");
 
         // Define transports based on config
         const logTransports = [];
+
+        // This currently has to be done as the auto instrumentation is not working
+        // https://github.com/open-telemetry/opentelemetry-js-contrib/issues/2090
+        logTransports.push(new OpenTelemetryTransportV3());
 
         // TODO: logs - these also seem quite hacky and hardcoded
         // Transports may not need to be set here at all as they can likely be managed by the otel instrumentation
@@ -97,10 +101,7 @@ export class LoggerService implements ILogger, NestLoggerService {
 
         return createLogger({
             level: logLevel,
-            defaultMeta: {
-                service: serviceName,
-                environment,
-            },
+            defaultMeta: {},
             format: format.combine(format.timestamp(), format.json()),
             transports: logTransports,
         });
