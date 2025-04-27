@@ -24,3 +24,4 @@
 - see if logger can log uncaught errors
 - update scorecard service to use new logger service
 - show application (request) logs in aspire dashboard
+- look further into how DB migrations should run, i have currently added a hack into the docker compose that starts the migrations of kickoff
